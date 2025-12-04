@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Happy Birthday — Wifeyy 🥺❤️💍</title>
+
+<style>
+  /* Basic layout */
+  :root{
+    --accent:#ff4d6d;
+    --accent-dark:#e63950;
+    --bg1:#0f0c29;
+    --bg2:#302b63;
+    --bg3:#24243e;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(135deg,var(--bg1),var(--bg2));font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}
+  .stage{position:relative;height:100vh;overflow:hidden;color:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:30px;box-sizing:border-box;}
+  h1.title{font-size:56px;margin:8px 0;letter-spacing:1px;text-shadow:0 6px 30px rgba(0,0,0,.6);transform-origin:center;}
+  .subtitle{font-size:20px;margin:4px 0 20px;color:rgba(255,255,255,0.9);}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));padding:22px;border-radius:18px;backdrop-filter: blur(6px);box-shadow: 0 10px 40px rgba(0,0,0,0.5);max-width:900px;width:95%;}
+
+  /* Typed message */
+  .typed{font-size:20px;line-height:1.4;color:#fff;margin-top:14px;min-height:72px}
+  .cursor{display:inline-block;width:2px;background:#fff;margin-left:6px;animation: blink 1s infinite;}
+  @keyframes blink{0%{opacity:1}50%{opacity:0}100%{opacity:1}}
+
+  /* Buttons */
+  .controls{margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .btn{padding:12px 18px;border-radius:999px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.12)}
+  .btn:active{transform:translateY(2px)}
+
+  /* Photo circle */
+  .photo{
+    width:140px;height:140px;border-radius:50%;
+    margin:18px auto 6px;overflow:hidden;border:6px solid rgba(255,255,255,0.12);
+    display:block;background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+    box-shadow: 0 10px 30px rgba(0,0,0,.6);
+  }
+  .photo img{width:100%;height:100%;object-fit:cover;display:block}
+
+  /* Floating hearts/balloons (css generated) */
+  .floating{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+
+  /* small screen adjustments */
+  @media (max-width:520px){
+    h1.title{font-size:36px}
+    .typed{font-size:16px}
+  }
+
+  /* little sparkle over the "Wifeyy" */
+  .wifey{display:inline-block;color:#ffe0f0;text-shadow:0 6px 24px rgba(255,77,109,0.14), 0 0 12px rgba(255,77,109,0.08);font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <!-- Canvas for fireworks/confetti -->
+  <canvas id="fx" style="position:absolute;inset:0;z-index:1;"></canvas>
+
+  <div class="card" style="position:relative;z-index:3;">
+    <div class="photo" id="photoSlot" title="Click to add a photo (optional)">
+      <!-- optional: user can replace src below with their photo file name (same folder) -->
+      <img src="" alt="Wifey photo" id="photoImg" />
+    </div>
+
+    <h1 class="title">🎉 Happy Birthday <span class="wifey">Wifeyy</span> 🥺❤️💍</h1>
+    <div class="subtitle">Aaj ka din sirf tumhara — surprise ke liye click karo below 🎁</div>
+
+    <div class="typed" id="typedArea"></div>
+
+    <div class="controls">
+      <button class="btn" id="surpriseBtn">Click for Surprise 🎁</button>
+      <button class="btn secondary" id="muteBtn">Play Music ▶️</button>
+      <button class="btn secondary" id="photoBtn">Add Photo 📸</button>
+    </div>
+  </div>
+
+  <!-- floating decorations container -->
+  <div class="floating" id="floating"></div>
+</div>
+
+<!-- Optional audio: user may replace "happy-bday.mp3" with a file in same folder -->
+<audio id="bgMusic" loop>
+  <!-- If you want music, place an MP3 named "happy-bday.mp3" in same folder or change src via controls -->
+  <source src="happy-bday.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* ============================
+   PERSONALIZED MESSAGE (user-provided)
+   ============================ */
+const fullMessage = `HAPPY BIRTHDAY MY JANNN ❤💝
+WISH YOU MANY MANY HAPPY RETURNS OF THE DAY 💌
+YOU ARE MY EVERYTHING MY JANNN 💖
+I ALWAYS LOVE YOU 😘😘 💖
+MANY MANY HAPPY BIRTHDAY 🎉🎁`;
+
+/* ============================
+   Typed text animation
+   ============================ */
+(function typedEffect(){
+  const el = document.getElementById('typedArea');
+  const cursor = document.createElement('span'); cursor.className='cursor';
+  el.appendChild(cursor);
+
+  let i = 0, line = 0;
+  const lines = fullMessage.split('\\n');
+  el.innerHTML = '';
+  function typeLine() {
+    if (line >= lines.length) { cursor.style.display='none'; return; }
+    const text = lines[line];
+    let j = 0;
+    const p = document.createElement('div');
+    el.insertBefore(p, cursor);
+    function step(){ 
+      if (j <= text.length) {
+        p.textContent = text.slice(0,j);
+        j++;
+        setTimeout(step, 40 + Math.random()*40);
+      } else {
+        line++;
+        setTimeout(typeLine, 400);
+      }
+    }
+    step();
+  }
+  // Wait until user clicks surprise to start typing (makes it more dramatic)
+  window.startTyping = () => {
+    if (!el.dataset.started) { el.dataset.started=true; typeLine(); }
+  }
+})();
+
+/* ============================
+   CONFETTI & FIREWORKS (Canvas)
+   ============================ */
+const canvas = document.getElementById('fx');
+const ctx = canvas.getContext('2d');
+let W = canvas.width = innerWidth;
+let H = canvas.height = innerHeight;
+addEventListener('resize', ()=>{ W = canvas.width = innerWidth; H = canvas.height = innerHeight; });
+
+/* particles for confetti and fireworks */
+const particles = [];
+
+function rand(min,max){ return Math.random()*(max-min)+min; }
+function hue(){ return Math.floor(rand(0,360)); }
+
+class Particle {
+  constructor(x,y,dx,dy,life,size,color,shape='circle'){
+    this.x=x; this.y=y; this.vx=dx; this.vy=dy; this.life=life; this.size=size; this.color=color; this.shape=shape; this.age=0;
+  }
+  update(dt){
+    this.vy += 0.02; // gravity-ish
+    this.x += this.vx*dt;
+    this.y += this.vy*dt;
+    this.age += dt;
+  }
+  draw(ctx){
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, 1 - this.age/this.life);
+    ctx.translate(this.x, this.y);
+    if (this.shape==='rect'){
+      ctx.fillStyle=this.color;
+      ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+    } else if (this.shape==='heart'){
+      // draw simple heart
+      ctx.beginPath();
+      const s=this.size/12;
+      ctx.moveTo(0, -6*s);
+      ctx.bezierCurveTo(6*s,-12*s,12*s,-6*s,0,6*s);
+      ctx.bezierCurveTo(-12*s,-6*s,-6*s,-12*s,0,-6*s);
+      ctx.fillStyle=this.color;
+      ctx.fill();
+    } else {
+      ctx.fillStyle=this.color;
+      ctx.beginPath(); ctx.arc(0,0,this.size/2,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+/* create burst (firework like) */
+function burst(x,y,colorCount=6){
+  for(let i=0;i<40;i++){
+    const a = rand(0,Math.PI*2);
+    const s = rand(2,7);
+    const c = hsl(${Math.floor(rand(0,360))},90%,60%);
+    particles.push(new Particle(x,y, Math.cos(a)*rand(1,6), Math.sin(a)*rand(1,6)*0.9, rand(60,120), s, c, (Math.random()>0.7?'rect':'circle')));
+  }
+}
+
+/* confetti raining */
+function confettiRain(){
+  for(let i=0;i<8;i++){
+    const x = rand(0,W), y = -10;
+    particles.push(new Particle(x,y, rand(-0.3,0.3), rand(1,2), rand(180,300), rand(6,12), hsl(${hue()},85%,60%), 'rect'));
+  }
+}
+
+/* floating hearts */
+function spawnHearts(){
+  const f = document.getElementById('floating');
+  // CSS hearts will be created in DOM for smooth transform
+  for(let i=0;i<9;i++){
+    const el = document.createElement('div');
+    el.style.position='absolute';
+    el.style.left = Math.random()*100 + '%';
+    el.style.bottom = '-40px';
+    el.style.fontSize = (12 + Math.random()*36) + 'px';
+    el.style.opacity = (0.6 + Math.random()*0.4);
+    el.style.transform = translateY(0);
+    el.style.transition = transform ${8+Math.random()*6}s cubic-bezier(.2,.8,.2,1), opacity 2s;
+    el.innerHTML = ['❤️','💖','💕','💘'][Math.floor(Math.random()*4)];
+    f.appendChild(el);
+    // trigger animation
+    setTimeout(()=> {
+      el.style.transform = translateY(-${innerHeight + 200}px) rotate(${Math.random()*360}deg);
+      el.style.opacity = 0;
+    }, 80 + Math.random()*800);
+    setTimeout(()=> el.remove(), 12000 + Math.random()*4000);
+  }
+}
+
+/* main loop */
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(1,(now-last)/16);
+  last = now;
+  ctx.clearRect(0,0,W,H);
+
+  // spawn a few floating sparks for ambience
+  if (Math.random() < 0.03) {
+    const x = rand(50,W-50), y = rand(50,H/2);
+    particles.push(new Particle(x,y, rand(-0.3,0.3), rand(-0.5,0.5), rand(120,200), rand(2,5), hsla(${hue()},85%,65%,0.9)));
+  }
+
+  for(let i = particles.length-1; i>=0; i--){
+    const p = particles[i];
+    p.update(dt);
+    p.draw(ctx);
+    if (p.y > H + 50 || p.age > p.life) particles.splice(i,1);
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ============================
+   UI Interactions
+   ============================ */
+const surpriseBtn = document.getElementById('surpriseBtn');
+const muteBtn = document.getElementById('muteBtn');
+const photoBtn = document.getElementById('photoBtn');
+const bgMusic = document.getElementById('bgMusic');
+let musicPlaying = false;
+
+surpriseBtn.addEventListener('click', ()=> {
+  // fireworks + confetti + hearts + typed message
+  const cx = innerWidth*0.5, cy = innerHeight*0.35;
+  burst(cx, cy); burst(cx*0.3, cy*0.4); burst(cx*1.4, cy*0.45);
+  confettiRain();
+  spawnHearts();
+  startTyping(); // starts typed message
+
+  // small popup modal style surprise
+  showPopup();
+  // play short chime by webaudio
+  playChime();
+});
+
+muteBtn.addEventListener('click', ()=> {
+  if (!musicPlaying){
+    // try to play
+    bgMusic.play().then(()=> {
+      musicPlaying=true; muteBtn.textContent='Mute Music ⏸️';
+    }).catch(()=> {
+      // some browsers block autoplay without user gesture: inform user
+      musicPlaying=false;
+      muteBtn.textContent='Music file not found ▶️';
+    });
+  } else {
+    bgMusic.pause(); musicPlaying=false; muteBtn.textContent='Play Music ▶️';
+  }
+});
+
+/* photo button: allow user to add a photo quickly */
+photoBtn.addEventListener('click', ()=> {
+  const inp = document.createElement('input');
+  inp.type='file'; inp.accept='image/*';
+  inp.onchange = (e)=>{
+    const f = e.target.files[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    document.getElementById('photoImg').src = url;
+  };
+  inp.click();
+});
+
+/* click on photo slot toggles file prompt */
+document.getElementById('photoSlot').addEventListener('click', ()=> photoBtn.click());
+
+/* little chime sound using WebAudio for instant feedback */
+function playChime(){
+  try {
+    const actx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    o.type = 'sine';
+    o.frequency.value = 880;
+    o.connect(g); g.connect(actx.destination);
+    g.gain.value = 0;
+    o.start();
+    // ramp
+    g.gain.linearRampToValueAtTime(0.12, actx.currentTime+0.01);
+    o.frequency.exponentialRampToValueAtTime(660, actx.currentTime+0.35);
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+1.2);
+    setTimeout(()=> o.stop(), 1400);
+  } catch(e){ /* ignore if audio not allowed */ }
+}
+
+/* popup surprise with personal message and heart animation */
+function showPopup(){
+  const pop = document.createElement('div');
+  pop.style.position='fixed';
+  pop.style.left='50%'; pop.style.top='50%';
+  pop.style.transform='translate(-50%,-50%) scale(0.6)';
+  pop.style.zIndex=9999;
+  pop.style.padding='26px';
+  pop.style.borderRadius='18px';
+  pop.style.background='linear-gradient(180deg,rgba(255,255,255,0.95),#fff)';
+  pop.style.color='#111';
+  pop.style.boxShadow='0 30px 80px rgba(0,0,0,0.45)';
+  pop.style.textAlign='center';
+  pop.innerHTML = `<div style="font-size:22px;font-weight:800;color:${getComputedStyle(document.documentElement).getPropertyValue('--accent')};">Surprise for <span style="color:#ff4d6d">Wifeyy</span> 🎉</div>
+  <div style="margin-top:12px;font-size:16px;line-height:1.4;color:#222;white-space:pre-wrap">${fullMessage}</div>
+  <div style="margin-top:16px"><button id="closePop" style="padding:10px 16px;border-radius:12px;border:none;background:#ff4d6d;color:#fff;font-weight:700;cursor:pointer">Close</button></div>`;
+  document.body.appendChild(pop);
+  // scale in
+  requestAnimationFrame(()=>{ pop.style.transition='transform .55s cubic-bezier(.2,.9,.2,1), opacity .4s'; pop.style.transform='translate(-50%,-50%) scale(1)'; });
+  document.getElementById('closePop').addEventListener('click', ()=> {
+    pop.style.transform='translate(-50%,-50%) scale(.6)'; pop.style.opacity=0;
+    setTimeout(()=> pop.remove(),500);
+  });
+
+  // more fireworks periodically
+  for(let i=0;i<3;i++) setTimeout(()=> burst(rand(80,innerWidth-80), rand(60, innerHeight/2)), i*420);
+}
+
+/* convenience: press space to trigger surprise too */
+addEventListener('keydown', (e)=>{ if (e.code === 'Space') surpriseBtn.click(); });
+
+/* slight initial animation for title */
+(function titlePulse(){
+  const t = document.querySelector('.title');
+  let s=1;
+  setInterval(()=> {
+    t.style.transform = scale(${1 + Math.sin(Date.now()/800)/40});
+  }, 60);
+})();
+
+/* start some ambient confetti slowly */
+setInterval(()=>{ if (Math.random()<0.25) confettiRain(); }, 1600);
+setInterval(()=>{ if (Math.random()<0.18) spawnHearts(); }, 2200);
+
+/* helpful note: allow user to drop a music file by dragging onto page */
+document.body.addEventListener('drop', (ev)=>{
+  ev.preventDefault();
+  if (!ev.dataTransfer.files) return;
+  const f = ev.dataTransfer.files[0];
+  if (!f) return;
+  const url = URL.createObjectURL(f);
+  bgMusic.src = url;
+  bgMusic.play().then(()=> { musicPlaying=true; muteBtn.textContent='Mute Music ⏸️'; }).catch(()=> {});
+});
+document.body.addEventListener('dragover',(e)=>e.preventDefault());
+
+/* initial placeholder: show small hint if no music file present in folder */
+if (!bgMusic.querySelector('source') || bgMusic.querySelector('source').src.endsWith('happy-bday.mp3')){
+  // user can add file named "happy-bday.mp3" in same folder OR drag-drop an mp3 on page
+  muteBtn.title = "Place an MP3 named 'happy-bday.mp3' in the same folder, or drag & drop a file here.";
+}
+
+/* small safety: ensure canvas resizes on mobile rotation */
+addEventListener('orientationchange', ()=>{ setTimeout(()=>{ W=canvas.width=innerWidth; H=canvas.height=innerHeight; },300); });
+
+</script>
+
+</body>
+</html>
